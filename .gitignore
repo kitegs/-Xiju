@@ -26,3 +26,11 @@ htmlcov/
 *.log
 .DS_Store
 Thumbs.db
+
+# Keep internal development records local; do not publish them.
+docs/superpowers/
+docs/alpha-acceptance-2026-09-08.md
+docs/delivery-correctness-2026-09-08.md
+docs/global-superstore-acceptance-2026-09-06.md
+docs/live-six-acceptance-2026-09-07.md
+docs/report-contract-acceptance-2026-09-08.md

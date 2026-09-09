@@ -1,0 +1,162 @@
+import { expect, test } from '@playwright/test'
+
+test('sending while a new conversation is pending uses the new conversation', async ({page}) => {
+  await page.goto('/')
+  await expect(page.getByText('当前上下文')).toBeVisible()
+  const firstCreated=page.waitForResponse(r=>r.request().method()==='POST' && r.url().endsWith('/api/v1/conversations'))
+  await page.getByRole('button',{name:/新建分析对话/}).click()
+  await firstCreated
+  let release, started, createdId
+  const gate=new Promise(resolve=>{release=resolve})
+  const ready=new Promise(resolve=>{started=resolve})
+  await page.route('**/api/v1/conversations',async route=>{
+    if(route.request().method()!=='POST') return route.continue()
+    const response=await route.fetch()
+    createdId=(await response.json()).id
+    started()
+    await gate
+    await route.fulfill({response})
+  })
+  await page.getByRole('button',{name:/新建分析对话/}).click()
+  await ready
+  await page.locator('textarea[placeholder^="向数据提问"]').fill('告诉我如何开始分析')
+  const plan=page.waitForRequest(r=>r.method()==='POST' && r.url().endsWith('/api/v1/chat/plan-async'))
+  await page.locator('.send-btn').click()
+  release()
+  expect((await plan).postDataJSON().conversation_id).toBe(createdId)
+})
+
+test('report library creates, renames, copies, searches and restores reports', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByText('当前上下文')).toBeVisible()
+  await page.getByRole('button', { name: '▦ 报告', exact: true }).click()
+  page.once('dialog', dialog => dialog.accept('CRUD 测试报告'))
+  await page.getByRole('button', { name: '＋ 新建空白报告', exact: true }).click()
+  await expect(page.locator('.document-titlebar input')).toHaveValue('CRUD 测试报告')
+  await page.locator('.document-titlebar input').fill('未保存标题')
+  page.once('dialog', dialog => dialog.dismiss())
+  await page.getByRole('button', { name: '▦ 报告', exact: true }).click()
+  await expect(page.locator('.document-titlebar input')).toHaveValue('未保存标题')
+  page.once('dialog', dialog => dialog.accept())
+  await page.getByRole('button', { name: '▦ 报告', exact: true }).click()
+  const search = page.getByLabel('搜索报告')
+  await search.fill('CRUD 测试报告')
+  let card = page.locator('.report-library .report-card').first()
+  page.once('dialog', dialog => dialog.accept('CRUD 已改名'))
+  await card.getByRole('button', { name: '重命名', exact: true }).click()
+  await search.fill('CRUD 已改名')
+  await expect(card.getByRole('heading')).toHaveText('CRUD 已改名')
+  page.once('dialog', dialog => dialog.accept('CRUD 副本'))
+  await card.getByRole('button', { name: '复制报告', exact: true }).click()
+  await expect(page.locator('.document-titlebar input')).toHaveValue('CRUD 副本')
+  await page.getByRole('button', { name: '▦ 报告', exact: true }).click()
+  await page.getByLabel('搜索报告').fill('CRUD 副本')
+  page.once('dialog', dialog => dialog.accept())
+  await card.getByRole('button', { name: '移入回收站', exact: true }).click()
+  await expect(page.locator('.report-library .report-card')).toHaveCount(0)
+  await page.getByRole('button', { name: '回收站', exact: true }).click()
+  await expect(card.getByRole('heading')).toHaveText('CRUD 副本')
+  await card.getByRole('button', { name: '恢复报告', exact: true }).click()
+  await expect(page.locator('.report-library .report-card')).toHaveCount(0)
+  await page.getByRole('button', { name: '返回报告库', exact: true }).click()
+  await expect(card.getByRole('heading')).toHaveText('CRUD 副本')
+})
+
+test('new user can load sample, choose policy and run an evidence-backed analysis', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByText('当前上下文')).toBeVisible()
+
+  await page.getByRole('button', { name: '载入示例', exact: true }).click()
+  await expect(page.locator('.dataset-card')).toBeVisible()
+
+  const permission = page.locator('.permission-mode:not(.clarification-mode) select')
+  await permission.selectOption('full')
+  await expect(page.locator('.safety-card')).toContainText('副本完全访问')
+  await permission.selectOption('safe')
+
+  await page.locator('textarea[placeholder^="向数据提问"]').fill('检查数据质量并给出可复核结论')
+  await page.locator('.send-btn').click()
+  await expect(page.locator('.analysis-plan-card')).toContainText('data.quality')
+  const records=page.locator('.execution-details').filter({hasText:'成功'})
+  await expect(records).toBeVisible({ timeout: 60_000 })
+  await records.locator(':scope > summary').click()
+  await expect(records).toContainText('证据')
+})
+
+test('generated reports can be sorted in the library and reordered in the editor', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '载入示例', exact: true }).click()
+  await expect(page.locator('.dataset-card')).toBeVisible()
+  const generateReport = page.getByRole('button', { name: '▤ 生成专业报告', exact: true })
+  await expect(generateReport).toBeVisible()
+  await generateReport.click()
+
+  const intake = page.locator('.intake-card')
+  await expect(intake).toBeVisible()
+  await intake.locator('input').first().fill('管理层')
+  await intake.getByRole('button', { name: '使用推荐默认值继续', exact: true }).click()
+
+  const artifact = page.getByText('可编辑分析报告已生成', { exact: true })
+  await expect(artifact).toBeVisible({ timeout: 60_000 })
+  await expect(page.locator('.component-results')).toContainText('内容审阅 · 完成')
+  await expect(page.locator('.component-results')).toContainText('图表排版 · 完成')
+  await artifact.click()
+  await expect(page.getByText('拖拽对象可排序', { exact: true })).toBeVisible()
+  await expect(page.locator('.paper')).toContainText('未经确认的业务假设')
+  await page.locator('.claim-checks > summary').click()
+  await expect(page.locator('.claim-checks')).toContainText('基线/计算一致')
+  await page.locator('.claim-checks').getByRole('button',{name:'定位内容'}).first().click()
+  await expect(page.locator('.paper .canvas-block.selected')).toBeVisible()
+  await page.locator('.paper-summary').fill('销售额为 999999999 元。')
+  await page.getByRole('button', { name: '保存', exact: true }).click()
+  await expect(page.locator('.claim-checks > summary')).toContainText('不可标为可交付')
+  await page.getByRole('button',{name:'重算并预览修复',exact:true}).click()
+  await expect(page.locator('.repair-proposal')).toContainText('修复提案')
+  page.once('dialog',dialog=>dialog.accept())
+  await page.getByRole('button',{name:'确认修复并保存版本',exact:true}).click()
+  await expect(page.locator('.paper-summary')).not.toContainText('999999999')
+  await expect(page.locator('.claim-checks > summary')).toContainText('当前规则检查通过')
+
+  const blocks = page.locator('.object-tree > button')
+  await expect(blocks.nth(1)).toBeVisible()
+  const secondBlockContent = await blocks.nth(1).locator('b').innerText()
+  await blocks.nth(1).click()
+  await page.getByRole('button', { name: '上移', exact: true }).click()
+  await expect(blocks.first().locator('b')).toHaveText(secondBlockContent)
+
+  await page.getByRole('button', { name: '保存', exact: true }).click()
+  await expect(page.locator('.toast')).toContainText('报告已保存')
+
+  await page.getByRole('button', { name: '▦ 报告', exact: true }).click()
+  const sort = page.getByLabel('报告排序', { exact: true })
+  await sort.selectOption('title_asc')
+  await expect(sort).toHaveValue('title_asc')
+})
+
+test('clarification preference persists and token center explains local zero usage', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: /新建分析对话/ }).click()
+  const clarification = page.locator('.clarification-mode select')
+  for (const mode of ['always', 'off', 'auto']) {
+    await page.locator('.capability-menu > summary').click()
+    const savedPreference = page.waitForResponse(response => response.request().method() === 'PATCH' && /\/api\/v1\/conversations\//.test(response.url()))
+    await clarification.selectOption(mode)
+    await savedPreference
+    await page.reload()
+    await expect(page.locator('.clarification-mode select')).toHaveValue(mode)
+  }
+
+  await page.locator('.capability-menu > summary').click()
+  const savedCapabilities = page.waitForResponse(response => response.request().method() === 'PATCH' && /\/api\/v1\/conversations\//.test(response.url()))
+  await page.getByRole('button', { name: '快速分析', exact: true }).click()
+  await savedCapabilities
+  await page.reload()
+  await page.locator('.capability-menu > summary').click()
+  await expect(page.locator('.capability-menu input[type="checkbox"]:checked')).toHaveCount(0)
+
+  await page.getByTitle('设置').click()
+  await page.getByRole('button', { name: /Token 中心/ }).click()
+  await expect(page.getByRole('heading', { name: 'Token 中心' })).toBeVisible()
+  await expect(page.locator('.token-center')).toContainText(/模型 Token|总 Token/)
+  await expect(page.locator('.token-center')).not.toContainText('¥')
+})

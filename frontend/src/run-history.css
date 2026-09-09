@@ -1,0 +1,8 @@
+.plan-running button { margin-left:auto; border:1px solid #d5d9ea; background:white; border-radius:5px; padding:4px 7px; font-size:8px; color:#5c5fc0; }
+.run-history { margin:12px 0; border-top:1px solid var(--line); padding-top:10px; }
+.run-history > summary { cursor:pointer; color:#607087; font-size:9px; font-weight:700; }
+.run-history article { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0; border-bottom:1px solid #edf0f4; }
+.run-history b,.run-history small { display:block; }
+.run-history b { font-size:9px; color:#44526a; }
+.run-history small { margin-top:2px; font-size:8px; color:#8994a4; }
+.run-history button { border:1px solid #d7ddea; background:#fff; border-radius:5px; padding:4px 7px; font-size:8px; color:#5b5fc2; }

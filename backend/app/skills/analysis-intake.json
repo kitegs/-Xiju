@@ -1,0 +1,14 @@
+{
+  "version": "analysis-intake-v1",
+  "triggers": ["生成报告", "经营报告", "管理层报告", "商业报告", "研究报告", "问卷报告", "创建看板", "生成看板", "复杂分析", "新业务目标", "dashboard", "report"],
+  "questions": [
+    {"question_key": "audience", "prompt": "这份分析主要给谁看？", "recommended_default": "业务负责人", "reason": "受众决定解释深度和措辞。", "affects": ["报告语气", "摘要层级"]},
+    {"question_key": "decision", "prompt": "你希望这份分析帮助做什么决定？", "recommended_default": "识别趋势、结构与异常，并给出可验证建议", "reason": "决策目标决定分析重点。", "affects": ["分析计划", "建议"]},
+    {"question_key": "time_range", "prompt": "需要分析哪个时间范围？", "recommended_default": "使用数据中全部可靠时间范围", "reason": "时间范围会改变聚合结果。", "affects": ["趋势", "筛选"]},
+    {"question_key": "comparison", "prompt": "需要与什么基准比较？", "recommended_default": "与上一可靠周期及总体平均比较", "reason": "比较基准决定变化的解释方式。", "affects": ["同比环比", "异常判断"]},
+    {"question_key": "metric_definition", "prompt": "是否有必须遵循的指标口径？", "recommended_default": "使用原字段名和本地聚合口径", "reason": "指标口径必须可复核。", "affects": ["计算", "证据"]},
+    {"question_key": "unit_currency", "prompt": "数值的单位或币种是什么？", "recommended_default": "沿用数据源单位，未知时明确标注", "reason": "单位缺失会导致错误解读。", "affects": ["图表单位", "报告说明"]},
+    {"question_key": "targets", "prompt": "是否有目标值、预算或预警线？", "recommended_default": "无已确认目标值，仅做描述性比较", "reason": "未确认目标不能作为达标判断依据。", "affects": ["参考线", "行动建议"]},
+    {"question_key": "output", "prompt": "希望最终产出什么形式？", "recommended_default": "可编辑专业报告", "reason": "输出形式影响内容结构。", "affects": ["报告", "看板"]}
+  ]
+}

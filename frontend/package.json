@@ -1,0 +1,22 @@
+{
+  "name": "ai-bi-v2-workbench",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test:e2e": "node ./scripts/run-e2e.mjs"
+  },
+  "dependencies": {
+    "echarts": "^6.1.0",
+    "vue": "^3.5.13",
+    "vue-echarts": "^8.0.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.5"
+  }
+}

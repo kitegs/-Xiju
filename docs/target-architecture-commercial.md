@@ -41,7 +41,7 @@
 | 文档版本 | 2.0 |
 | 状态 | 当前基线 |
 | 更新日期 | 2026-09-03 |
-| 对应需求 | [商业化产品需求基线](product-requirements-commercial.md) |
+| 对应需求 | [vNext 需求说明书](requirements-vnext.md) |
 | 历史参考 | [vNext 详细设计](detailed-design-vnext.md) |
 
 ## 1. 架构结论
@@ -536,4 +536,4 @@ Local DashboardSpec  → Adapter      → Superset Dashboard
 
 报告 CRUD/历史/导出归属 `report_routes.py`，共享序列化归属 `presenters.py`；工具计划执行归属 `run_execution.py`，后台生命周期归属 `run_runtime.py`。通过显式 `ExecutionPorts` 接入暂留在组装层的清洗、发布、模型与事件能力，禁止实现模块反向导入 main。
 
-领域不变量与当前兼容边界以 [domain-invariants.md](domain-invariants.md) 为准。`python.visualize` 仅为不可用的预留能力描述，不是新增的执行工具。不得将此轮协议与结构重构视为真实模型质量验收通过。
+领域不变量与当前兼容边界以本文档中的领域模型和安全边界为准。`python.visualize` 仅为不可用的预留能力描述，不是新增的执行工具。不得将协议与结构重构视为真实模型质量验收通过。

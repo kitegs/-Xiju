@@ -56,7 +56,7 @@ def review(folder):
             'synthesis_error': (meta.get('synthesis_validation') or {}).get('error'),
             'tokens_by_purpose': dict(stages), 'total_tokens': attempt['usage']['total_tokens'],
             'technical_status': 'degraded' if failures or (meta.get('synthesis_validation') or {}).get('status') != 'verified' else 'passed',
-            'semantic_acceptance': 'requires_human_review; see docs/alpha-acceptance-2026-09-08.md'})
+            'semantic_acceptance': 'requires_human_review; see the core documentation in docs/README.md'})
     adjudication = {'independent_source_checks': checks, 'cases': results,
                     'total_tokens': sum(r['total_tokens'] for r in results), 'original_attempts_preserved': True}
     destination = folder / 'adjudication.json'

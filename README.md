@@ -6,7 +6,7 @@
 
 > 核心升级第一期（2026-09-05）已加入分阶段 Token 追踪、Token 中心、Project AnalysisBrief 和三档澄清菜单。复杂报告请求会先在一张卡片中集中询问关键业务信息；用户可采用推荐值继续，但报告会明确列出“未经确认的业务假设”。Token 仅采用模型服务商返回的 Usage，本地确定性计算显示为 0，服务商未返回时不会用字符数伪造。
 
-当前产品与架构基线已经调整为“本地优先、可验证、可编辑、可重复运行的 AI 分析报告工作台”。开发范围和质量门槛见 [商业化产品需求基线](docs/product-requirements-commercial.md)，目标模块、领域模型和迁移顺序见 [商业化目标架构](docs/target-architecture-commercial.md)，完整索引见 [文档索引](docs/README.md)。
+当前产品与架构基线已经调整为“本地优先、可验证、可编辑、可重复运行的 AI 分析报告工作台”。需求与设计见 [需求说明书](docs/requirements-vnext.md)、[详细设计说明书](docs/detailed-design-vnext.md) 和 [目标架构](docs/target-architecture-commercial.md)，完整索引见 [文档索引](docs/README.md)。
 
 当前里程碑已可用：
 
@@ -27,7 +27,7 @@
 
 ## 离线本地启动
 
-首次使用建议先看 [单机简短引导](docs/quick-start-local.md)，运行 `scripts/check-local-readiness.ps1` 检查现有依赖。当前真实模型的已知质量限制见 [Alpha 对照验收](docs/alpha-acceptance-2026-09-08.md)，不要把规则通过当作完整业务验收。
+首次使用建议先看 [单机简短引导](docs/quick-start-local.md)，运行 `scripts/check-local-readiness.ps1` 检查现有依赖。
 
 此版本使用本机已存在的 Python 与 Node 依赖，不需要下载容器镜像。
 
@@ -140,7 +140,7 @@ python scripts\verify-commercial-report.py <Global-Superstore.csv> artifacts\glo
 
 脚本会校验数据哈希、关键数值、Evidence 引用、结构化结论、行动项、质量门禁以及 DOCX 中的表格和图像数量。正式样例还需渲染为页面图片并逐页检查，脚本通过不等同于视觉验收完成。
 
-真实数据的推荐来源、许可注意事项和验收矩阵见 [权威测试数据与验收矩阵](docs/benchmark-datasets.md)。公开仓库只提交合成样本或许可清晰的小型快照，不提交来源不明的 Global Superstore 文件。
+公开仓库只提交合成样本或许可清晰的小型快照，不提交来源不明的 Global Superstore 文件。
 
 ## 安全执行边界
 
@@ -148,13 +148,13 @@ python scripts\verify-commercial-report.py <Global-Superstore.csv> artifacts\glo
 
 保存草稿后，可在核验面板点击“重算并预览修复”，检查每项前后差异与候选质量，再确认保存版本。它基于原数据版本重算并恢复列出的系统结论，不自动认证自定义文字。预览不写报告，数据文件变动或报告已被其他操作修改时拒绝应用旧提案。
 
-当前范围与剩余问题见 [单机主线收敛计划](docs/convergence-plan.md)；第三方集成和企业功能暂缓扩展，已有入口不删除。
+第三方集成和企业功能暂缓扩展，已有入口不删除。
 
 新生成的报告建立服务端确定性结论基线。编辑器顶部“结论与证据核验”可展开状态、事实/解释/建议/假设及引用，并定位正文。修改后的草稿允许保存，但未核验结论阻止正式 DOCX 导出；未保存修改使上次检查失效。旧报告没有基线时需要重新生成，不会自动认证。
 
 当前采用保守的原文与证据指纹比对，并复算已提供结构化操作数的比率、期间增长与排名。自由改写即使正确，也会标为待核验；尚未实现自动语义证明或审阅后补算闭环。单位换算与期间边界有固定测试，不能把首末期变化当成同比/环比，不能把百分比直接当百分点。原始数据真实性、因果关系、业务口径及币种仍需人工确认。当前报告生成器只自动输出区间变化，不因增加校验器而自动增加同比图。
 
-校验不额外调用模型，0 模型 Token。基准说明见 [报告结论基准](docs/report-claim-benchmark.md)。
+校验不额外调用模型，0 模型 Token。
 
 ### 报告库管理
 
@@ -171,8 +171,6 @@ python scripts\verify-commercial-report.py <Global-Superstore.csv> artifacts\glo
 深入分析当前仅在 1–3 轮内选择尚未完成的固定只读诊断（画像、质量、描述统计），并非任意代码 Agent。内容审阅可调用已配置模型提供意见，不能替代证据核验。未配置模型时使用本地诊断与检查，并明确显示零模型调用。组件结果可展开查看操作、意见和 Token；模型返回无效格式也会保留已收到的 Usage。
 
 图表排版只调整本次新报告；多方案目前为本地规则生成的章节顺序提案，不自动覆盖现有报告。多表关联助手暂不可用。关闭可选能力不会关闭权限检查、基础质量检查或已有报告的确认保存流程。
-
-最新的真实 DeepSeek 对照结果、逐阶段 Token、强退/幂等测试和备份恢复命令见 [单机交付正确性验收](docs/delivery-correctness-2026-09-08.md)。旧阶段的测试数量不代表当前覆盖范围。
 
 普通任务（CSV/Excel 读取、字段剖析、缺失值检查、聚合、统计、图表和报告渲染）必须使用确定性内置工具，直接在服务端完成。
 
